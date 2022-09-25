@@ -90,8 +90,57 @@ int main() {
         screen = GAMEPLAY;
       break;
     case GAMEPLAY:
+      if (IsKeyPressed('P'))
+        gamePaused = !gamePaused;
       if (!gamePaused) {
-        // logic
+        // Player movement
+        if (IsKeyDown(KEY_LEFT))
+          player.position.x -= player.speed.x;
+        if (IsKeyDown(KEY_RIGHT))
+          player.position.x += player.speed.x;
+
+        if ((player.position.x) <= 0)
+          player.position.x = 0;
+        if ((player.position.x + player.size.x) >= screenWidth)
+          player.position.x = screenWidth - player.size.x;
+        player.bounds = (Rectangle){player.position.x, player.position.y,
+                                    player.size.x, player.size.y};
+        if (ball.active) {
+          // Ball movement
+          ball.position.x += ball.speed.x;
+          ball.position.y += ball.speed.y;
+
+          // Collision vs border
+          if (((ball.position.x + ball.radius) >= screenWidth) ||
+              ((ball.position.x - ball.radius) <= 0))
+            ball.speed.x *= -1;
+          if ((ball.position.y - ball.radius) <= 0)
+            ball.speed.y *= -1;
+
+          // Game over
+          if ((ball.position.y + ball.radius) >= screenHeight) {
+            ball.position.y = player.position.x + player.size.x / 2;
+            ball.position.y = player.position.y - ball.radius - 1.0f;
+            ball.speed = (Vector2){0, 0};
+            ball.active = false;
+
+            player.lifes--;
+          }
+
+          if (player.lifes < 0) {
+            screen = ENDING;
+            player.lifes = 5;
+            framesCounter = 0;
+          }
+        } else {
+          // Reset ball
+          ball.position.x = player.position.x + player.size.x / 2;
+          // Keyboard and mouse input
+          if (IsKeyPressed(KEY_SPACE)) {
+            ball.active = true;
+            ball.speed = (Vector2){0, -5.0f};
+          }
+        }
       }
       break;
     case ENDING:
