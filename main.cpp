@@ -110,12 +110,35 @@ int main() {
           ball.position.x += ball.speed.x;
           ball.position.y += ball.speed.y;
 
-          // Collision vs border
+          // Collision vs Border
           if (((ball.position.x + ball.radius) >= screenWidth) ||
               ((ball.position.x - ball.radius) <= 0))
             ball.speed.x *= -1;
           if ((ball.position.y - ball.radius) <= 0)
             ball.speed.y *= -1;
+
+          // Ball vs Player
+          if (CheckCollisionCircleRec(ball.position, ball.radius,
+                                      player.bounds)) {
+            ball.speed.y *= -1;
+            ball.speed.x =
+                (ball.position.x - (player.position.x + player.size.x / 2)) /
+                player.size.x * 5.0f;
+          }
+
+          // Ball vs Bricks
+          for (int j = 0; j < BRICKS_LINES; j++) {
+            for (int i = 0; i < BRICKS_PER_LINE; i++) {
+              if (bricks[j][i].active &&
+                  (CheckCollisionCircleRec(ball.position, ball.radius,
+                                           bricks[j][i].bounds))) {
+                bricks[j][i].active = false;
+                ball.speed.y *= -1;
+
+                break;
+              }
+            }
+          }
 
           // Game over
           if ((ball.position.y + ball.radius) >= screenHeight) {
@@ -176,12 +199,12 @@ int main() {
       for (int j = 0; j < BRICKS_LINES; j++) {
         for (int i = 0; i < BRICKS_PER_LINE; i++) {
           if (bricks[j][i].active) {
-            if ((i + j) % 2 == 2)
+            if ((i + j) % 2 == 0)
               DrawRectangle(bricks[j][i].position.x, bricks[j][i].position.y,
                             bricks[j][i].size.x, bricks[j][i].size.y, GRAY);
             else
               DrawRectangle(bricks[j][i].position.x, bricks[j][i].position.y,
-                            bricks[j][i].size.x, bricks[j][i].size.y, GRAY);
+                            bricks[j][i].size.x, bricks[j][i].size.y, DARKGRAY);
           }
         }
       }
